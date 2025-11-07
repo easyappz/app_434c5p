@@ -34,7 +34,7 @@ class AdSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Ad
-        fields = ['id', 'title', 'description', 'price', 'category', 'date_created', 'is_active', 'owner']
+        fields = ['id', 'title', 'description', 'price', 'category', 'location', 'date_created', 'is_active', 'owner']
         read_only_fields = ['date_created', 'owner']
 
 

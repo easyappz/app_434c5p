@@ -26,10 +26,11 @@ class AdFilter(django_filters.FilterSet):
     category = django_filters.CharFilter(field_name='category__name')
     price_gte = django_filters.NumberFilter(field_name='price', lookup_expr='gte')
     price_lte = django_filters.NumberFilter(field_name='price', lookup_expr='lte')
+    location = django_filters.CharFilter(field_name='location', lookup_expr='icontains')
 
     class Meta:
         model = Ad
-        fields = ['category', 'price_gte', 'price_lte']
+        fields = ['category', 'price_gte', 'price_lte', 'location']
 
 
 class IsOwner(permissions.BasePermission):
@@ -101,7 +102,7 @@ class AdListView(generics.ListAPIView):
     serializer_class = AdSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter]
     filterset_class = AdFilter
-    search_fields = ['title', 'description']
+    search_fields = ['title', 'description', 'location']
     pagination_class = StandardResultsSetPagination
     ordering_fields = ['date_created', 'price']
     ordering = ['-date_created']
