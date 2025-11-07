@@ -11,8 +11,9 @@ from drf_spectacular.utils import extend_schema
 from django.utils import timezone
 from rest_framework.pagination import PageNumberPagination
 import django_filters
-from .models import Ad, Category
-from .serializers import AdSerializer, RegisterSerializer, UserSerializer, MessageSerializer
+from django.shortcuts import get_object_or_404
+from .models import Ad, Category, Message
+from .serializers import AdSerializer, RegisterSerializer, UserSerializer, MessageSerializer, CategorySerializer
 
 
 class StandardResultsSetPagination(PageNumberPagination):
@@ -90,6 +91,11 @@ class LogoutView(APIView):
             return Response(status=status.HTTP_400_BAD_REQUEST)
 
 
+class CategoryListView(generics.ListAPIView):
+    queryset = Category.objects.all()
+    serializer_class = CategorySerializer
+
+
 class AdListView(generics.ListAPIView):
     queryset = Ad.objects.all()
     serializer_class = AdSerializer
@@ -128,6 +134,16 @@ class AdDetailView(generics.RetrieveUpdateDestroyAPIView):
         else:
             self.permission_classes = []
         return super().get_permissions()
+
+
+class SendMessageView(generics.CreateAPIView):
+    serializer_class = MessageSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def perform_create(self, serializer):
+        ad_id = self.kwargs['pk']
+        ad = get_object_or_404(Ad, id=ad_id)
+        serializer.save(sender=self.request.user, receiver=ad.owner, ad=ad)
 
 
 class HelloView(APIView):
