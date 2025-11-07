@@ -9,8 +9,26 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.filters import SearchFilter
 from drf_spectacular.utils import extend_schema
 from django.utils import timezone
+from rest_framework.pagination import PageNumberPagination
+import django_filters
 from .models import Ad, Category
 from .serializers import AdSerializer, RegisterSerializer, UserSerializer, MessageSerializer
+
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 10
+    page_size_query_param = 'page_size'
+    max_page_size = 100
+
+
+class AdFilter(django_filters.FilterSet):
+    category = django_filters.CharFilter(field_name='category__name')
+    price_gte = django_filters.NumberFilter(field_name='price', lookup_expr='gte')
+    price_lte = django_filters.NumberFilter(field_name='price', lookup_expr='lte')
+
+    class Meta:
+        model = Ad
+        fields = ['category', 'price_gte', 'price_lte']
 
 
 class IsOwner(permissions.BasePermission):
@@ -76,8 +94,11 @@ class AdListView(generics.ListAPIView):
     queryset = Ad.objects.all()
     serializer_class = AdSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter]
-    filterset_fields = ['category__slug']
+    filterset_class = AdFilter
     search_fields = ['title', 'description']
+    pagination_class = StandardResultsSetPagination
+    ordering_fields = ['date_created', 'price']
+    ordering = ['-date_created']
     @extend_schema(
         description="List ads with search and filter"
     )
