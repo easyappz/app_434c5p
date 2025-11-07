@@ -112,6 +112,19 @@ class AdListView(generics.ListAPIView):
         return super().get(request, *args, **kwargs)
 
 
+class UserAdListView(generics.ListAPIView):
+    serializer_class = AdSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardResultsSetPagination
+    ordering_fields = ['date_created', 'price']
+    ordering = ['-date_created']
+    @extend_schema(
+        description="List user's own ads"
+    )
+    def get_queryset(self):
+        return Ad.objects.filter(owner=self.request.user)
+
+
 class AdCreateView(generics.CreateAPIView):
     serializer_class = AdSerializer
     permission_classes = [IsAuthenticated]
